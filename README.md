@@ -1,139 +1,53 @@
-# Analytics Dashboard - Full Stack Application
+# Vanna AI Service
 
-A production-grade full-stack web application with an Interactive Analytics Dashboard and "Chat with Data" interface powered by Vanna AI.
+Self-hosted Vanna AI service for natural language SQL generation using Groq LLM.
 
-## 🏗️ Architecture
+## Setup
 
-This is a monorepo containing:
-
-- **apps/web** - Next.js frontend (App Router, TypeScript, shadcn/ui, TailwindCSS)
-- **apps/api** - Express.js backend API (TypeScript, Prisma, PostgreSQL)
-- **services/vanna** - Self-hosted Vanna AI service (Python FastAPI, Groq)
-
-## 📋 Prerequisites
-
-- Node.js >= 18.0.0
-- PostgreSQL >= 14.0
-- Python >= 3.9
-- Docker & Docker Compose (optional, for local development)
-
-## 🚀 Quick Start
-
-### 1. Install Dependencies
-
+1. Install dependencies:
 ```bash
-npm install
+pip install -r requirements.txt
 ```
 
-### 2. Set Up Database
-
-```bash
-# Using Docker Compose (recommended)
-docker-compose up -d postgres
-
-# Or use your own PostgreSQL instance
-# Update DATABASE_URL in apps/api/.env
-```
-
-### 3. Configure Environment Variables
-
-Create `.env` files in each app:
-
-**apps/api/.env:**
+2. Configure environment variables (copy `.env.example` to `.env`):
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/analytics_db"
-VANNA_API_BASE_URL="http://localhost:8000"
-PORT=3001
-```
-
-**apps/web/.env.local:**
-```env
-NEXT_PUBLIC_API_BASE="http://localhost:3001"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-```
-
-**services/vanna/.env:**
-```env
-DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/analytics_db"
-GROQ_API_KEY="your-groq-api-key"
+DATABASE_URL=postgresql+psycopg://user:pass@host:5432/dbname
+GROQ_API_KEY=your-groq-api-key
 PORT=8000
 ```
 
-### 4. Initialize Database
-
+3. Run the service:
 ```bash
-cd apps/api
-npx prisma migrate dev
-npx prisma db seed
+python -m uvicorn main:app --reload --port 8000
 ```
 
-### 5. Start Services
+## API Endpoints
 
-```bash
-# Start all services
-npm run dev
+### POST /api/chat
 
-# Or start individually:
-# Terminal 1: Backend API
-cd apps/api && npm run dev
+Process natural language queries and return SQL + results.
 
-# Terminal 2: Frontend
-cd apps/web && npm run dev
-
-# Terminal 3: Vanna AI
-cd services/vanna && python -m uvicorn main:app --reload
+**Request:**
+```json
+{
+  "query": "What's the total spend in the last 90 days?"
+}
 ```
 
-## 📊 Database Schema
-
-See [Database Schema Documentation](./docs/database-schema.md)
-
-## 🔌 API Endpoints
-
-See [API Documentation](./docs/api-documentation.md)
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-npm run test
-
-# Run tests for specific app
-cd apps/api && npm test
+**Response:**
+```json
+{
+  "sql": "SELECT SUM(amount) FROM payments WHERE payment_date >= NOW() - INTERVAL '90 days'",
+  "data": [{"sum": 125000.50}],
+  "message": "Query executed successfully"
+}
 ```
 
-## 📦 Deployment
-
-### Frontend & Backend (Vercel)
-
-1. Connect your GitHub repo to Vercel
-2. Configure environment variables in Vercel dashboard
-3. Deploy
-
-### Vanna AI (Self-hosted)
+## Deployment
 
 Deploy to Render, Railway, Fly.io, or Digital Ocean:
 
-```bash
-cd services/vanna
-# Follow platform-specific deployment instructions
-```
-
-## 📚 Documentation
-
-- [Setup Guide](./docs/setup.md)
-- [API Documentation](./docs/api-documentation.md)
-- [Database Schema](./docs/database-schema.md)
-- [Chat with Data Workflow](./docs/chat-workflow.md)
-
-## 🛠️ Tech Stack
-
-- **Frontend**: Next.js 14, TypeScript, TailwindCSS, shadcn/ui, Recharts
-- **Backend**: Express.js, TypeScript, Prisma, PostgreSQL
-- **AI**: Vanna AI, Groq LLM, FastAPI
-- **Monorepo**: Turborepo
-
-## 📝 License
-
-MIT
+1. Set environment variables in your platform
+2. Install Python dependencies
+3. Run: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
